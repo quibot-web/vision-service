@@ -1,12 +1,15 @@
 FROM python:3.9-slim
 
-# Instalar dependencias del sistema necesarias para OpenCV
-RUN apt-get update && apt-get install -y libgl1 libglib2.0-0
+# Instalar dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
 
-# Instalar librerías de Python
-RUN pip install fastapi uvicorn opencv-python-headless python-multipart
+WORKDIR /app
 
-# Copiar el código de la aplicación
+# Copiar requirements primero para aprovechar el caché de Docker
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar el resto del código
 COPY . .
 
 # Comando para iniciar el servicio
