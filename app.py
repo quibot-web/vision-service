@@ -4,16 +4,25 @@ import numpy as np
 
 app = FastAPI()
 
-# Aceptamos cualquier nombre de archivo (Field alias)
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    # Leemos los bytes del archivo
+    # Leemos los datos binarios
     contents = await file.read()
+    
+    # Convertimos a un array de numpy
     nparr = np.frombuffer(contents, np.uint8)
+    
+    # Decodificamos la imagen
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     
     if img is None:
-        return {"status": "error", "message": "No se pudo decodificar la imagen"}
+        # Aquí sabremos si es un problema de formato de imagen
+        return {
+            "status": "error", 
+            "message": "OpenCV no pudo decodificar la imagen",
+            "received_size": len(contents),
+            "content_type": file.content_type
+        }
     
     h, w = img.shape[:2]
     return {"status": "success", "width": w, "height": h}
