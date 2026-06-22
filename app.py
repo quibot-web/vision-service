@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Request, HTTPException
-import openai
+from openai import OpenAI # Importación moderna
 import os
 
 app = FastAPI()
 
-# Configura tu clave de API (asegúrate de tenerla en las variables de entorno de Coolify)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Inicializa el cliente moderno
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 @app.post("/analyze")
 async def analyze(request: Request):
@@ -17,13 +17,12 @@ async def analyze(request: Request):
         if not image_base64:
             raise HTTPException(status_code=400, detail="No se recibió la imagen")
 
-        # Añadir prefijo para que OpenAI reconozca el formato
         if not image_base64.startswith("data:image/"):
             image_base64 = f"data:image/jpeg;base64,{image_base64}"
 
-        # Llamada a la API de OpenAI
-        response = openai.ChatCompletion.create(
-            model="gpt-4o", # O el modelo que estés usando
+        # LLAMADA ACTUALIZADA A LA API
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[
                 {
                     "role": "user",
